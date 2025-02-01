@@ -33,6 +33,8 @@ func main() {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 
+	defer db.Close()
+
 	err = db.CreateTemps()
 	if err != nil {
 		log.Fatal(err)
