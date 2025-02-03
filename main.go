@@ -98,7 +98,7 @@ func main() {
 		}
 
 		// Получение льгот
-		benefitRows, err := db.GetBenefits(docRow.DocumentID.String)
+		benefitRows, err := db.GetBenefits(docRow.ExtCitizenID.String)
 
 		if err != nil {
 			log.Fatal(err)
