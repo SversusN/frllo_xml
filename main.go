@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/cheggaaa/pb/v3"
@@ -32,7 +34,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
-
 	defer db.Close()
 
 	err = db.CreateTemps()
@@ -40,6 +41,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if cfg.Recipes {
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+
+		go func() {
+			maxTSrecipe, _ := RecipeExport(db, &wg, cfg.RecipesTS, cfg.Code)
+			if maxTSrecipe > 0 {
+				cfg.RecipesTS = maxTSrecipe
+				cfg.SaveConfigToYAML(*cfg, filepath.Join(configPath, "config.yaml"))
+			}
+		}()
+		wg.Wait()
+	}
 	// Выполнение запроса для получения документов
 	rows, err := db.GetDocuments(cfg.TS)
 	if err != nil {
@@ -103,7 +117,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer benefitRows.Close()
 
 		var benefits []m.Benefit
 		benefits, err = pgx.CollectRows(benefitRows, pgx.RowToStructByName[m.Benefit])
@@ -120,6 +133,7 @@ func main() {
 				CancelDate:     benefits[b].CancelDate.String,
 			})
 		}
+		defer benefitRows.Close()
 		bar.Increment()
 		documents = append(documents, doc)
 	}
@@ -139,7 +153,7 @@ func main() {
 	xmlHeader := xml.Header + string(xmlData)
 
 	// Сохранение результата на диск
-	filePath := fmt.Sprint("3.058_ExportFnsiInd_", time.Now().Unix(), ".xml")
+	filePath := fmt.Sprint(cfg.Code, "_ExportFnsiInd_", time.Now().Unix(), ".xml")
 	err = os.WriteFile(filePath, []byte(xmlHeader), 0644)
 	cfg.TS = maxTs
 	cfg.SaveConfigToYAML(*cfg, filepath.Join(configPath, "config.yaml"))
@@ -148,6 +162,107 @@ func main() {
 	}
 	bar.Finish()
 	fmt.Printf("XML data successfully written to %s\n", filePath)
+}
+
+func RecipeExport(storage storage.Storage, wg *sync.WaitGroup, recipeTS int64, code string) (maxRecipeTs int64, err error) {
+
+	rows, err := storage.GetRecipes(recipeTS)
+	var maxTS atomic.Int64
+	maxTS.Store(0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var documents []m.DocumentRecipe
+
+	for rows.Next() {
+		var doc m.DocumentRecipe
+		var citizen m.CitizenRecipe
+		var identifyDoc m.DocRecipe
+		var recipe m.Recipe
+
+		err := rows.Scan(
+			&doc.DocumentID,
+			&doc.DocDateTime,
+			&citizen.ExtCitizenID,
+			&citizen.Name,
+			&citizen.Surname,
+			&citizen.Patronymic,
+			&citizen.Birthdate,
+			&citizen.Sex,
+			&citizen.Region,
+			&citizen.Snils,
+			&identifyDoc.DocType,
+			&identifyDoc.Serial,
+			&identifyDoc.Num,
+			&identifyDoc.DateIssue,
+			&identifyDoc.Authority,
+			&recipe.RecipeSerial,
+			&recipe.RecipeNum,
+			&recipe.ExtRecipeID,
+			&recipe.MedOrgOID,
+			&recipe.DoctorName,
+			&recipe.StaffPositionCode,
+			&recipe.DoctorSnils,
+			&recipe.MedicalCard,
+			&recipe.BenefitCode,
+			&recipe.MKB10Code,
+			&recipe.DrugSmnnCode,
+			&recipe.CommissionDate,
+			&recipe.CommissionNum,
+			&recipe.Qty,
+			&recipe.RecipeDate,
+			&recipe.RecipeExpiryCode,
+			&recipe.DateExpiry,
+			&recipe.TS,
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if recipe.TS > int(maxTS.Load()) {
+			maxTS.Store(int64(recipe.TS))
+		}
+
+		// Заполнение структуры Citizen
+		citizen.IdentifyDocs = append(citizen.IdentifyDocs, identifyDoc)
+		doc.Citizen = citizen
+
+		// Заполнение структуры Recipe
+		doc.Recipe = recipe
+
+		documents = append(documents, doc)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Создание корневого элемента XML
+	root := m.RootRecipe{
+		InfoSysCode: "3.058",
+		Documents:   documents,
+	}
+
+	// Преобразование в XML
+	xmlData, err := xml.MarshalIndent(root, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Добавление XML заголовка
+	xmlHeader := xml.Header + string(xmlData)
+
+	// Сохранение результата на диск
+
+	filePath := fmt.Sprint(code, "_ExportWrittenRecipes_", time.Now().Unix(), ".xml")
+	err = os.WriteFile(filePath, []byte(xmlHeader), 0644)
+	if err != nil {
+		log.Fatalf("Unable to write file: %v\n", err)
+	}
+
+	fmt.Printf("XML data successfully written to %s\n", filePath)
+	wg.Done()
+	return maxTS.Load(), nil
 }
 
 // Функция для замены всех вхождений подстроки

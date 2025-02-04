@@ -14,6 +14,9 @@ type Config struct {
 	// 	DatabaseURL  – dsn для подключения к БД.
 	DatabaseURL string `yaml:"database_url"`
 	TS          int64  `yaml:"ts"`
+	Recipes     bool   `yaml:"recipes"`
+	RecipesTS   int64  `yaml:"recipes_ts"`
+	Code        string `yaml:"code"`
 }
 
 // Initialize – функция инициализации конфига.

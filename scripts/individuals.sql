@@ -26,4 +26,5 @@ SELECT
      privelege_doc_tmp pdt
         inner join dct.individual ind on ind."Id" = pdt."IndividualId"
  where EXTRACT(EPOCH FROM ind."ModifyDate") >$1
+ and ind."Id" = '24a72696-3376-4563-a462-f1a51ca5ffa4'
  limit 2000;
