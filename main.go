@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -20,8 +21,6 @@ import (
 
 	m "frllo_xml/models"
 )
-
-// Document структура для документа
 
 func main() {
 	configPath, _ := os.Getwd()
@@ -46,6 +45,7 @@ func main() {
 		wg.Add(1)
 
 		go func() {
+			defer wg.Done()
 			maxTSrecipe, _ := RecipeExport(db, &wg, cfg.RecipesTS, cfg.Code)
 			if maxTSrecipe > 0 {
 				cfg.RecipesTS = maxTSrecipe
@@ -96,8 +96,8 @@ func main() {
 				PolicySN:    docRow.PolicySN.String,
 				Region:      docRow.Region.String,
 				IdentifyDocs: []m.Doc{{
-					DocTypeCIT:     1,
-					DocTypeNameCIT: "",
+					DocTypeCIT:     toInteger(docRow.DocTypeCIT.String),
+					DocTypeNameCIT: docRow.DocTypeNameCIT.String,
 					SerialCIT:      docRow.SerialCIT.String,
 					NumCIT:         docRow.NumCIT.String,
 					DateIssueCIT:   docRow.DateIssueCIT.String,
@@ -239,7 +239,7 @@ func RecipeExport(storage storage.Storage, wg *sync.WaitGroup, recipeTS int64, c
 
 	// Создание корневого элемента XML
 	root := m.RootRecipe{
-		InfoSysCode: "3.058",
+		InfoSysCode: code,
 		Documents:   documents,
 	}
 
@@ -261,11 +261,18 @@ func RecipeExport(storage storage.Storage, wg *sync.WaitGroup, recipeTS int64, c
 	}
 
 	fmt.Printf("XML data successfully written to %s\n", filePath)
-	wg.Done()
+
 	return maxTS.Load(), nil
 }
 
 // Функция для замены всех вхождений подстроки
 func replaceAll(s, old, new string) string {
 	return strings.ReplaceAll(s, old, new)
+}
+func toInteger(s string) int {
+	i, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return int(i)
 }

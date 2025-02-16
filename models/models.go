@@ -32,15 +32,15 @@ type Citizen struct {
 type Doc struct {
 	DocTypeCIT     int    `xml:"doc_type_cit,omitempty"`
 	DocTypeNameCIT string `xml:"doc_type_name_cit,omitempty"`
-	SerialCIT      string `xml:"serial_cit,omitempty" db:"CitizenshipSerie"`
-	NumCIT         string `xml:"num_cit,omitempty" db:"CitizenshipNumber"`
-	DateIssueCIT   string `xml:"date_issue_cit,omitempty"`
+	SerialCIT      string `xml:"serial_cit,omitempty" db:"credential_serie"`
+	NumCIT         string `xml:"num_cit,omitempty" db:"credential_number"`
+	DateIssueCIT   string `xml:"date_issue_cit,omitempty" db:"date_issue_cit"`
 	DateExpiryCIT  string `xml:"date_expiry_cit,omitempty"`
 	AuthorityCIT   string `xml:"authority_cit,omitempty" db:"CitizenshipAuthority"`
-	SerialIDEN     string `xml:"serial_iden,omitempty" db:"CredentialSerie"`
-	NumIDEN        string `xml:"num_iden,omitempty" db:"CredentialNumber"`
-	DateIssueIDEN  string `xml:"date_issue_iden,omitempty"`
-	AuthorityIDEN  string `xml:"authority_iden,omitempty" db:"CredentialAuthority"`
+	SerialIDEN     string `xml:"serial_iden,omitempty" db:"seria_iden,omitempty"`
+	NumIDEN        string `xml:"num_iden,omitempty" db:"num_iden,omitempty"`
+	DateIssueIDEN  string `xml:"date_issue_iden,omitempty" db:"date_issue_iden,omitempty"`
+	AuthorityIDEN  string `xml:"authority_iden,omitempty" db:"authority_iden,omitempty"`
 }
 
 // Benefit структура для льгот
@@ -68,27 +68,29 @@ type Root struct {
 }
 
 type DocumentRow struct {
-	DocumentID    sql.NullString `db:"document_id"`           // pdt."Id" as document_id
-	DocDateTime   sql.NullString `db:"doc_date_time"`         // TO_CHAR(NOW(), 'YYYY-MM-DDThh:mm:ss') as doc_date_time
-	RegisterID    sql.NullString `db:"frlo_id"`               // ind."FrloId" as frlo_id
-	ExtCitizenID  sql.NullString `db:"ind_id"`                // ind."Id" as ind_id
-	Name          sql.NullString `db:"individual_first_name"` // ind."IndividualFirstName" as individual_first_name
-	Surname       sql.NullString `db:"individual_last_name"`  // ind."IndividualLastName" as individual_last_name
-	Patronymic    sql.NullString `db:"individual_patronymic"` // ind."IndividualPatronymic" as individual_patronymic
-	Birthdate     sql.NullString `db:"birthdate"`             // TO_CHAR(ind."IndividualBirthDate", 'YYYY-MM-DDThh:mm:ss') as birthdate
-	Sex           sql.NullString `db:"sex"`                   // case when ind."IndividualSex" = 'Мужской' then 1 else 0 end as sex
-	Citizenship   sql.NullString `db:"citethenship"`          // coalesce(ind."CitizenshipNumber", '643') as citethenship
-	Snils         sql.NullString `db:"individual_snils"`      // replace(replace(ind."IndividualSnils",'-',''), ' ','') as individual_snils
-	PolicySN      sql.NullString `db:"individual_policy"`     // ind."IndividualPolicy" as individual_policy
-	Region        sql.NullString `db:"region"`                // '64000' as region
-	SerialCIT     sql.NullString `db:"citizenship_serie"`     // ind."CitizenshipSerie" as citizenship_serie
-	NumCIT        sql.NullString `db:"citizenship_number"`    // ind."CitizenshipNumber" as citizenship_number
-	DateIssueCIT  sql.NullString `db:"date_issue_cit"`        // TO_CHAR(ind."CitizenshipDateIssue", 'YYYY-MM-DDThh:mm:ss') as date_issue_cit
-	DateExpiryCIT sql.NullString `db:"date_expiry_cit"`       // TO_CHAR(ind."CitizenshipDateExpiry", 'YYYY-MM-DDThh:mm:ss') as date_expiry_cit
-	AuthorityCIT  sql.NullString `db:"citezenship_authority"` // ind."CitizenshipAuthority" as citezenship_authority
-	SerialIDEN    sql.NullString `db:"credential_serie"`      // ind."CredentialSerie"  as credential_serie
-	NumIDEN       sql.NullString `db:"credential_number"`     // ind."CredentialNumber" as credential_number
-	DateIssueIDEN sql.NullString `db:"date_issue_iden"`       // TO_CHAR(ind."CredentialDateIssue", 'YYYY-MM-DDThh:mm:ss') as date_issue_cit (обратите внимание на возможное совпадение алиаса)
-	AuthorityIDEN sql.NullString `db:"authority_iden"`        // ind."CredentialAuthority" as authority_iden
-	TS            sql.NullInt64  `db:"ts"`
+	DocumentID     sql.NullString `db:"document_id"`           // pdt."Id" as document_id
+	DocDateTime    sql.NullString `db:"doc_date_time"`         // TO_CHAR(NOW(), 'YYYY-MM-DDThh:mm:ss') as doc_date_time
+	RegisterID     sql.NullString `db:"frlo_id"`               // ind."FrloId" as frlo_id
+	ExtCitizenID   sql.NullString `db:"ind_id"`                // ind."Id" as ind_id
+	Name           sql.NullString `db:"individual_first_name"` // ind."IndividualFirstName" as individual_first_name
+	Surname        sql.NullString `db:"individual_last_name"`  // ind."IndividualLastName" as individual_last_name
+	Patronymic     sql.NullString `db:"individual_patronymic"` // ind."IndividualPatronymic" as individual_patronymic
+	Birthdate      sql.NullString `db:"birthdate"`             // TO_CHAR(ind."IndividualBirthDate", 'YYYY-MM-DDThh:mm:ss') as birthdate
+	Sex            sql.NullString `db:"sex"`                   // case when ind."IndividualSex" = 'Мужской' then 1 else 0 end as sex
+	Citizenship    sql.NullString `db:"citethenship"`          // coalesce(ind."CitizenshipNumber", '643') as citethenship
+	DocTypeCIT     sql.NullString `db:"doc_type_cit"`          //  '1' as 	doc_type_cit,
+	DocTypeNameCIT sql.NullString `db:"doc_type_name_cit"`     //'паспорт РФ' as   doc_type_name_cit,
+	Snils          sql.NullString `db:"individual_snils"`      // replace(replace(ind."IndividualSnils",'-',''), ' ','') as individual_snils
+	PolicySN       sql.NullString `db:"individual_policy"`     // ind."IndividualPolicy" as individual_policy
+	Region         sql.NullString `db:"region"`                // '64000' as region
+	SerialCIT      sql.NullString `db:"citizenship_serie"`     // ind."CitizenshipSerie" as citizenship_serie
+	NumCIT         sql.NullString `db:"citizenship_number"`    // ind."CitizenshipNumber" as citizenship_number
+	DateIssueCIT   sql.NullString `db:"date_issue_cit"`        // TO_CHAR(ind."CitizenshipDateIssue", 'YYYY-MM-DDThh:mm:ss') as date_issue_cit
+	DateExpiryCIT  sql.NullString `db:"date_expiry_cit"`       // TO_CHAR(ind."CitizenshipDateExpiry", 'YYYY-MM-DDThh:mm:ss') as date_expiry_cit
+	AuthorityCIT   sql.NullString `db:"citezenship_authority"` // ind."CitizenshipAuthority" as citezenship_authority
+	SerialIDEN     sql.NullString `db:"serial_iden"`           // ind."CredentialSerie"  as credential_serie
+	NumIDEN        sql.NullString `db:"num_iden"`              // ind."CredentialNumber" as credential_number
+	DateIssueIDEN  sql.NullString `db:"date_issue_iden"`       // TO_CHAR(ind."CredentialDateIssue", 'YYYY-MM-DDThh:mm:ss') as date_issue_cit (обратите внимание на возможное совпадение алиаса)
+	AuthorityIDEN  sql.NullString `db:"authority_iden"`        // ind."CredentialAuthority" as authority_iden
+	TS             sql.NullInt64  `db:"ts"`
 }
