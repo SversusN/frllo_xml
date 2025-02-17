@@ -29,14 +29,15 @@ type Citizen struct {
 }
 
 // Doc структура для документов удостоверяющих личность
+
 type Doc struct {
-	DocTypeCIT     int    `xml:"doc_type_cit,omitempty"`
+	DocTypeCIT     int    `xml:"doc_type,omitempty"`
 	DocTypeNameCIT string `xml:"doc_type_name_cit,omitempty"`
-	SerialCIT      string `xml:"serial_cit,omitempty" db:"credential_serie"`
-	NumCIT         string `xml:"num_cit,omitempty" db:"credential_number"`
-	DateIssueCIT   string `xml:"date_issue_cit,omitempty" db:"date_issue_cit"`
-	DateExpiryCIT  string `xml:"date_expiry_cit,omitempty"`
-	AuthorityCIT   string `xml:"authority_cit,omitempty" db:"CitizenshipAuthority"`
+	SerialCIT      string `xml:"serial,omitempty" db:"credential_serie"`
+	NumCIT         string `xml:"num,omitempty" db:"credential_number"`
+	DateIssueCIT   string `xml:"date_issue,omitempty" db:"date_issue_cit"`
+	DateExpiryCIT  string `xml:"date_expiry,omitempty"`
+	AuthorityCIT   string `xml:"authority,omitempty" db:"CitizenshipAuthority"`
 	SerialIDEN     string `xml:"serial_iden,omitempty" db:"seria_iden,omitempty"`
 	NumIDEN        string `xml:"num_iden,omitempty" db:"num_iden,omitempty"`
 	DateIssueIDEN  string `xml:"date_issue_iden,omitempty" db:"date_issue_iden,omitempty"`
