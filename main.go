@@ -139,7 +139,7 @@ func main() {
 	}
 	// Создание корневого элемента XML
 	root := m.Root{
-		InfoSysCode: "3.058",
+		InfoSysCode: cfg.Code,
 		Documents:   documents,
 	}
 
